@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>KiP App 2025 - Ramadhanti Rosyada (Input Kegiatan)</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+      background-color: #f4f4f4;
+    }
+    h1 {
+      text-align: center;
+    }
+    .input-form {
+      margin-top: 2rem;
+      background-color: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    input, textarea, select {
+      width: 100%;
+      margin-top: 0.5rem;
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      margin-top: 1rem;
+      padding: 0.7rem 1.2rem;
+      background-color: orange;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>KiP App 2025 - Ramadhanti Rosyada</h1>
+
+  <div class="input-form">
+    <h3>Input Kegiatan Harian</h3>
+    <form id="activity-form">
+      <label for="input-start-date">Pilih Rentang Tanggal:</label>
+      <input type="date" id="input-start-date" required min="2025-01-01" max="2025-12-31" />
+      <input type="date" id="input-end-date" required min="2025-01-01" max="2025-12-31" />
+
+      <label for="input-name">Nama Kegiatan:</label>
+      <input type="text" id="input-name" required />
+
+      <label for="input-link">Link Bukti Dukung (opsional):</label>
+      <input type="url" id="input-link" />
+
+      <label for="input-img">Upload Gambar Bukti (opsional):</label>
+      <input type="file" id="input-img" accept="image/*" />
+
+      <button type="submit">Simpan</button>
+    </form>
+  </div>
+
+  <script>
+    // Simpan data kegiatan di localStorage agar bisa dibaca oleh index.html
+    // Format data sama seperti sebelumnya, tapi disimpan di localStorage key 'kip-activities'
+
+    const form = document.getElementById('activity-form');
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const startDate = new Date(document.getElementById('input-start-date').value);
+      const endDate = new Date(document.getElementById('input-end-date').value);
+      const name = document.getElementById('input-name').value.trim();
+      const link = document.getElementById('input-link').value.trim();
+      const fileInput = document.getElementById('input-img');
+      const file = fileInput.files[0];
+
+      if (startDate > endDate) {
+        alert('Tanggal mulai harus sebelum tanggal selesai.');
+        return;
+      }
+
+      const reader = new FileReader();
+
+      reader.onload = function(event) {
+        const imageData = file ? event.target.result : '';
+        // Ambil data lama dari localStorage
+        let activities = JSON.parse(localStorage.getItem('kip-activities')) || {};
+
+        for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+          const dateStr = d.toISOString().split('T')[0];
+          if (!activities[dateStr]) activities[dateStr] = [];
+          activities[dateStr].push({
+            name: name,
+            link: link,
+            image: imageData
+          });
+        }
+
+        localStorage.setItem('kip-activities', JSON.stringify(activities));
+        alert('Kegiatan disimpan di browser (localStorage).');
+
+        form.reset();
+      };
+
+      if (file) {
+        reader.readAsDataURL(file);
+      } else {
+        reader.onload();
+      }
+    });
+  </script>
+</body>
+</html>
